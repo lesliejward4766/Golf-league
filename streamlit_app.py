@@ -84,4 +84,16 @@ elif page == "Master Leaderboard":
     st.title("🏆 Leaderboard")
     df = conn.read(worksheet="Scores")
     if not df.empty:
-        st.dataframe(df[['Date', 'Name', 'Gross', 'Putts']].sort_values("Date", ascending=False), use_
+        st.dataframe(df[['Date', 'Name', 'Gross', 'Putts']].sort_values("Date", ascending=False), use_container_width=True)
+
+# --- 3. TEE TIMES ---
+elif page == "Tee Time Sign-up":
+    st.title("📅 Weekly Tee Times")
+    df_times = conn.read(worksheet="TeeTimes")
+    st.dataframe(df_times, use_container_width=True)
+
+# --- 4. COMMISH ---
+elif page == "Commish Portal":
+    st.title("👨‍💼 Admin")
+    if st.text_input("Password", type="password") == "golf2026":
+        st.write("Commish Access Active.")
