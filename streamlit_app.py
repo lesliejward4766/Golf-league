@@ -2,6 +2,14 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
+# 1. Establish the connection to your Google Sheet
+conn = st.connection("gsheets", type=GSheetsConnection)
+
+# 2. Add a way to clear the cache so the app doesn't "remember" old versions of your sheet
+if st.sidebar.button("🔄 Refresh Data"):
+    st.cache_data.clear()
+    st.rerun()
+    
 # Page Configuration
 st.set_page_config(page_title="Golf League Hub", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
