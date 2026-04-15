@@ -86,11 +86,44 @@ elif page == "Master Leaderboard":
     if not df.empty:
         st.dataframe(df[['Date', 'Name', 'Gross', 'Putts']].sort_values("Date", ascending=False), use_container_width=True)
 
-# --- 3. TEE TIMES ---
+# --- 3. TEE TIME SIGN-UP ---
 elif page == "Tee Time Sign-up":
-    st.title("📅 Weekly Tee Times")
-    df_times = conn.read(worksheet="TeeTimes")
-    st.dataframe(df_times, use_container_width=True)
+    # Pull the current sheet
+    df_times = conn.read(worksheet="TeeTimes", ttl=0)
+    
+    # We'll use a specific cell in your sheet (or a Streamlit secret) to store the 'Current Date'
+    # For now, let's assume the first row of a new "Settings" tab has the date
+    try:
+        settings_df = conn.read(worksheet="Settings")
+        current_league_date = settings_df.iloc[0]['Value']
+    except:
+        current_league_date = "Next Event"
+
+    st.title(f"📅 Sign-up for {current_league_date}")
+    st.write("Find an open slot and add your name.")
+    
+    st.dataframe(df_times, use_container_width=True, hide_index=True)
+
+    with st.form("signup_form"):
+        col1, col2 = st.columns(2)
+        name = col1.text_input("Your Name")
+        selected_time = col2.selectbox("Select a Time Slot", df_times["Time"].tolist())
+        submit_signup = st.form_submit_button("Join Group")
+
+        if submit_signup and name:
+            row_idx = df_times.index[df_times['Time'] == selected_time][0]
+            added = False
+            for col in ["Player 1", "Player 2", "Player 3", "Player 4"]:
+                if pd.isna(df_times.at[row_idx, col]) or df_times.at[row_idx, col] == "":
+                    df_times.at[row_idx, col] = name
+                    added = True
+                    break
+            
+            if added:
+                conn.update(worksheet="TeeTimes", data=df_times)
+                st.success(f"Added to {selected_time}!")
+                st.cache_data.clear()
+                st.rerun()
 
 # --- 4. COMMISH ---
 elif page == "Commish Portal":
